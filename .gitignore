@@ -1,0 +1,67 @@
+# MeshDash .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database (user data — never ship)
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Session and cache
+sessions/
+.cache/
+
+# Uploads (user data)
+plugin_uploads/
+pending_plugins/
+
+# Archives and backups
+*.zip
+*.tar.gz
+*.bak
+
+# Config with secrets
+.mesh-dash_config
+
+# PHP errors
+c2_php_errors.log
+
+# Docker (temporary removal in R3.0)
+docker-compose.yml
+Dockerfile
+
+# Download packages
+versions/R3.0/mesh-dash*.zip
