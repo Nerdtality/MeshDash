@@ -32,22 +32,30 @@ fi
 
 # ── 2. Get Version Info from Server ──────────────────────────────
 echo "[INFO] Contacting MeshDash server for install info..."
-RESPONSE=$(curl -sf "${MD_SETUP_URL}?action=get_install_info&key=${MD_SETUP_KEY}" 2>/dev/null)
+HTTP_CODE=$(curl -s -o /tmp/md_response.json -w "%{http_code}" "${MD_SETUP_URL}?action=get_install_info&key=${MD_SETUP_KEY}" 2>/dev/null)
+RESPONSE=$(cat /tmp/md_response.json 2>/dev/null)
 
-if [ $? -ne 0 ] || [ -z "$RESPONSE" ]; then
-    echo "[ERROR] Failed to contact MeshDash server."
-    echo "[ERROR] Check your network connection and MD_SETUP_URL."
+if [ "$HTTP_CODE" != "200" ] || [ -z "$RESPONSE" ]; then
+    if [ "$HTTP_CODE" = "403" ]; then
+        echo "[ERROR] Invalid API key. Generate a new one at https://meshdash.co.uk/"
+    elif [ "$HTTP_CODE" = "404" ]; then
+        echo "[ERROR] Configuration not found. Please create a setup first at https://meshdash.co.uk/"
+    elif [ -z "$HTTP_CODE" ] || [ "$HTTP_CODE" = "000" ]; then
+        echo "[ERROR] Cannot reach MeshDash server. Check your network connection."
+    else
+        echo "[ERROR] Server returned HTTP $HTTP_CODE"
+    fi
     sleep 300
     exit 1
 fi
 
+# Parse the JSON response
 TARGET_VERSION=$(echo "$RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin)['install_info']['version'])" 2>/dev/null)
 ZIP_URL=$(echo "$RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin)['install_info']['zip_url'])" 2>/dev/null)
 CONFIG_URL=$(echo "$RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin)['install_info']['config_url'])" 2>/dev/null)
 
 if [ -z "$TARGET_VERSION" ] || [ -z "$ZIP_URL" ]; then
-    echo "[ERROR] Invalid response from server."
-    echo "[ERROR] Response: $RESPONSE"
+    echo "[ERROR] Invalid response from server — missing version or zip URL."
     sleep 300
     exit 1
 fi
