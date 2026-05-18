@@ -81,7 +81,56 @@ Then open `http://localhost:8282/setup` in your browser to complete the first-ti
 
 **Requirements:** Python 3.9+, a Meshtastic radio (or MQTT observer mode), Linux / Raspberry Pi / WSL2.
 
-> **Docker support** is temporarily unavailable in R3.0 and will return in R3.1. Use the native installers above.
+> **Docker** is supported via the official [`rusjpmd/meshdash-runner`](https://hub.docker.com/r/rusjpmd/meshdash-runner) image — see [Docker setup](#docker) below.
+
+## Docker
+
+### Cloud Setup (with MD_SETUP_KEY)
+
+Generate your install command at [meshdash.co.uk](https://meshdash.co.uk/) and run it:
+
+```bash
+docker run -d \
+  --name meshdash \
+  --restart always \
+  --network host \
+  --privileged \
+  --log-opt max-size=10m --log-opt max-file=3 \
+  -v /dev:/dev \
+  -v meshdash_data:/app/data \
+  -e MD_SETUP_KEY="MD-YOUR-KEY-HERE" \
+  -e MD_SETUP_URL="https://meshdash.co.uk/user_setup_core.php" \
+  rusjpmd/meshdash-runner:latest
+```
+
+The container auto-downloads the latest MeshDash version, installs dependencies, fetches your config, and starts the dashboard. Updates happen automatically on restart.
+
+### Standalone (no account needed)
+
+No setup key? No problem. Just run the container and configure everything through the built-in web wizard:
+
+```bash
+docker run -d \
+  --name meshdash \
+  --restart always \
+  --network host \
+  --privileged \
+  --log-opt max-size=10m --log-opt max-file=3 \
+  -v /dev:/dev \
+  -v meshdash_data:/app/data \
+  rusjpmd/meshdash-runner:latest
+```
+
+Then open **http://localhost:8000/setup** in your browser to configure your radio connection and create an admin account.
+
+### Required flags
+
+| Flag | Purpose |
+|------|---------|
+| `--network host` | Access host networking for local Meshtastic device discovery |
+| `--privileged` | Required for Serial/USB access to the radio |
+| `-v /dev:/dev` | Maps host device tree so the container can see serial hardware |
+| `-v meshdash_data:/app/data` | Persists database, logs, and settings across container updates |
 
 ## Core Features
 
